@@ -35,9 +35,10 @@ class ImagesDuplicateFinder:
                                 self.__hash_to_paths[hash_str] = [str(os.path.join(address, file_name))]
 
     @staticmethod
-    def __display_duplicate_group(paths):
+    def __display_duplicate_group(paths, hash_str):
         for i, path in enumerate(paths):
             ax = plt.subplot(1, len(paths), i + 1)
+            plt.suptitle(f"Группа изображений с одинаковой хэш суммой: {hash_str}")
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             img = Image.open(path)
@@ -50,6 +51,6 @@ class ImagesDuplicateFinder:
         for hash_str, paths in self.__hash_to_paths.items():
             if len(paths) >= min_len_of_duplicates_groups:
                 if display_images:
-                    self.__display_duplicate_group(paths)
+                    self.__display_duplicate_group(paths, hash_str)
 
                 print("hash: " + hash_str + "\tpaths:" + ", ".join(paths))
