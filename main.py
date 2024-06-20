@@ -1,9 +1,10 @@
 import argparse
 import os
 import sys
+import time
 from PIL import Image
 import imagehash
-
+import matplotlib.pyplot as plt
 
 def is_file_extension_suitable(file_name):
     formats = ['jpg', 'jpeg', 'png', 'gif']
@@ -23,7 +24,7 @@ def find_duplicates(paths):
                 if is_file_extension_suitable(file_name):
                     with Image.open(os.path.join(address, file_name)) as image:
                         image.draft(mode="RGB", size=(256, 256))  # рескейлим картинку во время чтения (работает только для jpeg)
-                        hash_str = str(imagehash.average_hash(image))
+                        hash_str = str(imagehash.phash(image))
                         if hash_str in hash_to_paths.keys():
                             hash_to_paths[hash_str].append(str(os.path.join(address, file_name)))
                         else:
@@ -32,18 +33,46 @@ def find_duplicates(paths):
     return hash_to_paths
 
 
-def print_duplicates(hash_to_paths):
+def show_duplicates(hash_to_paths):
     for hash_str, paths in hash_to_paths.items():
         if len(paths) > 2:
+            for i, path in enumerate(paths):
+                ax = plt.subplot(1, len(paths), i + 1)
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+                img = Image.open(path)
+                plt.imshow(img)
+                plt.grid()
+
+            plt.show()
+            time.sleep(1)
+
             print("hash: " + hash_str + "\tpaths:" + ", ".join(paths))
 
 
 def main():
+    # plt.subplot(1, 3, 1)
+    # plt.plot([1, 2, 3])
+    # plt.grid()
+    # plt.subplot(1, 3, 2)
+    # plt.plot([1, 2, 3])
+    # plt.grid()
+
+    # for i in range(3):
+    #     plt.subplot(1, 3, i + 1)
+    #     plt.plot([1, 2, 3])
+    #     plt.grid()
+    # plt.show()
+    #
+    # plt.show()
+    # plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    # plt.show()
     if len(sys.argv) <= 1:
         print("paths must be specified as an argument")
         return
-
-    print_duplicates(find_duplicates(sys.argv[1:]))
+    #
+    #
+    show_duplicates(find_duplicates(sys.argv[1:]))
 
 
 if __name__ == '__main__':
