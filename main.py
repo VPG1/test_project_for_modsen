@@ -6,7 +6,7 @@ import imagehash
 
 
 def is_file_extension_suitable(file_name):
-    formats = ['jpg', 'jpeg']
+    formats = ['jpg', 'jpeg', 'png', 'gif']
     for file_format in formats:
         if file_name.endswith(file_format):
             return True
@@ -21,11 +21,13 @@ def find_duplicates(paths):
         for address, dirs, files in os.walk(str(path)):
             for file_name in files:
                 if is_file_extension_suitable(file_name):
-                    hash_str = str(imagehash.average_hash(Image.open(os.path.join(address, file_name))))
-                    if hash_str in hash_to_paths.keys():
-                        hash_to_paths[hash_str].append(str(os.path.join(address, file_name)))
-                    else:
-                        hash_to_paths[hash_str] = [str(os.path.join(address, file_name))]
+                    with Image.open(os.path.join(address, file_name)) as image:
+                        image.draft(mode="RGB", size=(256, 256))  # рескейлим картинку во время чтения (работает только для jpeg)
+                        hash_str = str(imagehash.average_hash(image))
+                        if hash_str in hash_to_paths.keys():
+                            hash_to_paths[hash_str].append(str(os.path.join(address, file_name)))
+                        else:
+                            hash_to_paths[hash_str] = [str(os.path.join(address, file_name))]
 
     return hash_to_paths
 
