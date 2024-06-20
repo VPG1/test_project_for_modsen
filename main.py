@@ -64,12 +64,19 @@ def show_duplicates(hash_to_paths, min_len_of_duplicates_groups):
             print("hash: " + hash_str + "\tpaths:" + ", ".join(paths))
 
 
-def main():
-    if len(sys.argv) <= 1:
-        print("paths must be specified as an argument")
-        return
+def parse_arguments():
+    def list_of_strings(arg):
+        return arg.split(',')
 
-    show_duplicates(find_duplicates(sys.argv[1:]), 4)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--group-len', default=3, type=int)
+    parser.add_argument('--paths-list', type=list_of_strings)
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+    show_duplicates(find_duplicates(args.paths_list), args.group_len)
 
 
 if __name__ == '__main__':
