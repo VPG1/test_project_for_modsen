@@ -5,6 +5,17 @@ import time
 from PIL import Image
 import imagehash
 import matplotlib.pyplot as plt
+import loguru
+
+
+def time_logger(function):
+    def wrapped(*args):
+        start_time = time.time()
+        res = function(*args)
+        loguru.logger.info(f'Время выполнения: {time.time() - start_time}')
+        return res
+
+    return wrapped
 
 
 def is_file_extension_suitable(file_name):
@@ -16,6 +27,7 @@ def is_file_extension_suitable(file_name):
     return False
 
 
+@time_logger
 def find_duplicates(paths):
     hash_to_paths = {}
 
@@ -24,7 +36,8 @@ def find_duplicates(paths):
             for file_name in files:
                 if is_file_extension_suitable(file_name):
                     with Image.open(os.path.join(address, file_name)) as image:
-                        image.draft(mode="RGB", size=(256, 256))  # рескейлим картинку во время чтения (работает только для jpeg)
+                        image.draft(mode="RGB",
+                                    size=(256, 256))  # рескейлим картинку во время чтения (работает только для jpeg)
                         hash_str = str(imagehash.phash(image))
                         if hash_str in hash_to_paths.keys():
                             hash_to_paths[hash_str].append(str(os.path.join(address, file_name)))
@@ -34,9 +47,9 @@ def find_duplicates(paths):
     return hash_to_paths
 
 
-def show_duplicates(hash_to_paths):
+def show_duplicates(hash_to_paths, min_len_of_duplicates_groups):
     for hash_str, paths in hash_to_paths.items():
-        if len(paths) > 2:
+        if len(paths) >= min_len_of_duplicates_groups:
             for i, path in enumerate(paths):
                 ax = plt.subplot(1, len(paths), i + 1)
                 ax.get_xaxis().set_visible(False)
@@ -56,7 +69,7 @@ def main():
         print("paths must be specified as an argument")
         return
 
-    show_duplicates(find_duplicates(sys.argv[1:]))
+    show_duplicates(find_duplicates(sys.argv[1:]), 4)
 
 
 if __name__ == '__main__':
