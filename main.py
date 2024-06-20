@@ -6,6 +6,7 @@ from PIL import Image
 import imagehash
 import matplotlib.pyplot as plt
 
+
 def is_file_extension_suitable(file_name):
     formats = ['jpg', 'jpeg', 'png', 'gif']
     for file_format in formats:
@@ -51,27 +52,10 @@ def show_duplicates(hash_to_paths):
 
 
 def main():
-    # plt.subplot(1, 3, 1)
-    # plt.plot([1, 2, 3])
-    # plt.grid()
-    # plt.subplot(1, 3, 2)
-    # plt.plot([1, 2, 3])
-    # plt.grid()
-
-    # for i in range(3):
-    #     plt.subplot(1, 3, i + 1)
-    #     plt.plot([1, 2, 3])
-    #     plt.grid()
-    # plt.show()
-    #
-    # plt.show()
-    # plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    # plt.show()
     if len(sys.argv) <= 1:
         print("paths must be specified as an argument")
         return
-    #
-    #
+
     show_duplicates(find_duplicates(sys.argv[1:]))
 
 
