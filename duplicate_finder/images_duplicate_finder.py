@@ -12,7 +12,7 @@ class ImagesDuplicateFinder:
 
     @staticmethod
     def __is_file_extension_suitable(file_name):
-        formats = ['jpg', 'jpeg', 'png', 'gif']
+        formats = ['jpg', 'jpeg', 'png', 'gif', 'bmp']
         for file_format in formats:
             if file_name.endswith(file_format):
                 return True
