@@ -1,5 +1,8 @@
 import os
+import urllib.request
+
 import imagehash
+import loguru
 from PIL import Image
 import matplotlib.pyplot as plt
 import time
@@ -25,9 +28,19 @@ class ImagesDuplicateFinder:
             for address, dirs, files in os.walk(str(path)):
                 for file_name in files:
                     if self.__is_file_extension_suitable(file_name):
+                        image = Image.open(os.path.join(address, file_name))
+
+                        try:
+                            image.verify()
+                        except:
+                            loguru.logger.error(f'Error while verifying {file_name}')
+
+
+                        # re-open the image after verification, because image equal None after verify method
                         with Image.open(os.path.join(address, file_name)) as image:
-                            # рескейлим картинку во время чтения (работает только для jpeg)
+                            # rescaling the image while decoding (works only for jpeg)
                             image.draft(mode="RGB", size=(256, 256))
+
                             hash_str = str(imagehash.phash(image))
                             if hash_str in self.__hash_to_paths.keys():
                                 self.__hash_to_paths[hash_str].append(str(os.path.join(address, file_name)))
@@ -44,13 +57,18 @@ class ImagesDuplicateFinder:
             img = Image.open(path)
             plt.imshow(img)
             plt.grid()
+
         plt.show()
+
         time.sleep(1)
 
     def show_duplicates(self, min_len_of_duplicates_groups=3, display_images=False):
         for hash_str, paths in self.__hash_to_paths.items():
             if len(paths) >= min_len_of_duplicates_groups:
                 if display_images:
-                    self.__display_duplicate_group(paths, hash_str)
+                    try:
+                        self.__display_duplicate_group(paths, hash_str)
+                    except Exception as e:
+                        loguru.logger.error(f'Error while displaying {hash_str}: {e}')
 
                 print("hash: " + hash_str + "\tpaths:" + ", ".join(paths))
