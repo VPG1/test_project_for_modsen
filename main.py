@@ -1,4 +1,5 @@
 import argparse
+import os.path
 from duplicate_finder.images_duplicate_finder import ImagesDuplicateFinder
 
 
@@ -9,12 +10,23 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--group-len', default=3, type=int)
     parser.add_argument('--paths-list', type=list_of_strings)
+    parser.add_argument('--display-images', default=True, type=bool)
+
     return parser.parse_args()
 
 
 def main():
     args = parse_arguments()
     duplicate_finder = ImagesDuplicateFinder()
+
+    if args.paths_list is None:
+        print("You must provide paths")
+        return
+    for path in args.paths_list:
+        if not os.path.isdir(path):
+            print("One of the paths is incorrect")
+            return
+
     duplicate_finder.group_duplicate(args.paths_list)
     duplicate_finder.show_duplicates(args.group_len, display_images=True)
 
