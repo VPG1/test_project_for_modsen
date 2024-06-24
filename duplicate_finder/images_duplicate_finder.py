@@ -13,6 +13,10 @@ class ImagesDuplicateFinder:
     def __init__(self):
         self.__hash_to_paths = {}
 
+    @property
+    def hash_to_paths(self):
+        return self.__hash_to_paths
+
     @staticmethod
     def __is_file_extension_suitable(file_name):
         formats = ['jpg', 'jpeg', 'png', 'gif', 'bmp']
@@ -22,19 +26,18 @@ class ImagesDuplicateFinder:
 
         return False
 
-    @time_logger.time_logger
+    # @time_logger.time_logger
     def group_duplicate(self, paths):
         for path in paths:
             for address, dirs, files in os.walk(str(path)):
                 for file_name in files:
                     if self.__is_file_extension_suitable(file_name):
-                        image = Image.open(os.path.join(address, file_name))
-
                         try:
+                            image = Image.open(os.path.join(address, file_name))
                             image.verify()
-                        except:
-                            loguru.logger.error(f'Error while verifying {file_name}')
-
+                        except IOError as e:
+                            loguru.logger.error(f'Error while open or verifying {file_name}')
+                            continue
 
                         # re-open the image after verification, because image equal None after verify method
                         with Image.open(os.path.join(address, file_name)) as image:
