@@ -1,10 +1,7 @@
 import os
 import shutil
-import tempfile
-
 import pytest
 from duplicate_finder.images_duplicate_finder import ImagesDuplicateFinder
-from contextlib import nullcontext as does_not_raise
 import numpy
 from PIL import Image
 

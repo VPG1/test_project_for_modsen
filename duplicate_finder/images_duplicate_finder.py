@@ -1,12 +1,9 @@
 import os
-import urllib.request
-
 import imagehash
 import loguru
 from PIL import Image
 import matplotlib.pyplot as plt
 import time
-from . import time_logger
 
 
 class ImagesDuplicateFinder:
@@ -15,10 +12,12 @@ class ImagesDuplicateFinder:
 
     @property
     def hash_to_paths(self):
+        '''Геттер для словаря с дубликатам'''
         return self.__hash_to_paths
 
     @staticmethod
     def __is_file_extension_suitable(file_name):
+        '''метод для проверки расширения файлов'''
         formats = ['jpg', 'jpeg', 'png', 'gif', 'bmp']
         for file_format in formats:
             if file_name.endswith(file_format):
@@ -28,6 +27,7 @@ class ImagesDuplicateFinder:
 
     # @time_logger.time_logger
     def group_duplicate(self, paths):
+        '''метод для группировки дубликатов'''
         for path in paths:
             for address, dirs, files in os.walk(str(path)):
                 for file_name in files:
@@ -52,6 +52,7 @@ class ImagesDuplicateFinder:
 
     @staticmethod
     def __display_duplicate_group(paths, hash_str):
+        '''метод для вывода на экран группы изображений'''
         for i, path in enumerate(paths):
             ax = plt.subplot(1, len(paths), i + 1)
             plt.suptitle(f"Группа изображений с одинаковой хэш суммой: {hash_str}")
@@ -66,6 +67,7 @@ class ImagesDuplicateFinder:
         time.sleep(1)
 
     def show_duplicates(self, min_len_of_duplicates_groups=3, display_images=False):
+        '''метод для вывода всех групп дубликатов'''
         for hash_str, paths in self.__hash_to_paths.items():
             if len(paths) >= min_len_of_duplicates_groups:
                 if display_images:
