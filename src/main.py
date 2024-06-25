@@ -27,7 +27,8 @@ def parse_arguments():
 def main():
     args = parse_arguments()
     duplicate_finder = ImagesDuplicateFinder()
-    duplicate_finder.group_duplicate(args.paths_list)
+    duplicate_finder.load_images(args.paths_list)
+    duplicate_finder.group_duplicates()
     duplicate_finder.show_duplicates(args.group_len, display_images=True)
 
 

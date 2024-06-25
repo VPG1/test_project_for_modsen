@@ -62,7 +62,7 @@ class TestImagesDuplicateFinder:
         ]
     )
     def test_group_duplicate(self, paths, result):
-        duplicate_finder = ImagesDuplicateFinder()
-        duplicate_finder.group_duplicate(paths)
-        print(duplicate_finder.hash_to_paths)
+        duplicate_finder = ImagesDuplicateFinder(group_by_feature=False)
+        duplicate_finder.load_images(paths)
+        duplicate_finder.group_duplicates()
         assert len(duplicate_finder.hash_to_paths) == result
