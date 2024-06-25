@@ -1,7 +1,7 @@
 import os
 import shutil
 import pytest
-from duplicate_finder.images_duplicate_finder import ImagesDuplicateFinder
+from src.duplicate_finder.images_duplicate_finder import ImagesDuplicateFinder
 import numpy
 from PIL import Image
 

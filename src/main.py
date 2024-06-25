@@ -7,10 +7,15 @@ def parse_arguments():
     def list_of_strings(arg):
         return arg.split(',')
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog='Duplicate finder',
+        description='Finds duplicate images by using and grouping them.',
+
+    )
     parser.add_argument('--group-len', default=3, type=int)
+    parser.add_argument('--group_by_features', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--display-images', action=argparse.BooleanOptionalAction)
     parser.add_argument('--paths-list', type=list_of_strings)
-    parser.add_argument('--display-images', default=True, type=bool)
 
     args = parser.parse_args()
 
@@ -26,10 +31,10 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
-    duplicate_finder = ImagesDuplicateFinder()
+    duplicate_finder = ImagesDuplicateFinder(args.group_by_features)
     duplicate_finder.load_images(args.paths_list)
     duplicate_finder.group_duplicates()
-    duplicate_finder.show_duplicates(args.group_len, display_images=True)
+    duplicate_finder.show_duplicates(args.group_len, args.display_images)
 
 
 if __name__ == '__main__':

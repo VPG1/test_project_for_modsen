@@ -5,7 +5,6 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 import time
-# import multiprocessing
 
 from keras.src.applications.vgg16 import preprocess_input
 from sklearn.metrics.pairwise import cosine_similarity
@@ -13,11 +12,12 @@ from tensorflow import keras
 
 
 class ImagesDuplicateFinder:
-    def __init__(self, group_by_feature=True):
+    def __init__(self, group_by_feature):
         self.__model = None
         if group_by_feature:
-            loguru.logger.info('Initializing ImagesDuplicateFinder...')
-            self.__model = keras.applications.VGG16 (weights='imagenet', include_top=False,
+            # Инициализац
+            loguru.logger.info('Initializing Model...')
+            self.__model = keras.applications.VGG16(weights='imagenet', include_top=False,
                                                     pooling='max', input_shape=(224, 224, 3))
             for model_layer in self.__model.layers:
                 model_layer.trainable = False
@@ -60,9 +60,11 @@ class ImagesDuplicateFinder:
 
     @staticmethod
     def __calculate_hash(image):
+        """Метод для вычисления хэша изображения"""
         return str(imagehash.phash(image))
 
     def __calculate_features_vector(self, image):
+        """Метод для вычисления вектора изображения"""
         resized_image = image.resize((224, 224))
         img_array = np.expand_dims(np.array(resized_image), axis=0)
         img_array = preprocess_input(img_array)
@@ -71,9 +73,6 @@ class ImagesDuplicateFinder:
     # @time_logger.time_logger
     def group_duplicates(self):
         """Метод для группировки дубликатов"""
-
-        # with multiprocessing.Pool() as pool:
-        #     pool.map(self.__calculate_hash, self.__images)
         # группируем по хэшу
         for path, image in self.__images:
             hash_str = self.__calculate_hash(image)
@@ -114,7 +113,7 @@ class ImagesDuplicateFinder:
 
         time.sleep(1)
 
-    def show_duplicates(self, min_len_of_duplicates_groups=3, display_images=False):
+    def show_duplicates(self, min_len_of_duplicates_groups, display_images):
         """Метод для вывода всех групп дубликатов"""
         print("Группы по хэшам:")
         for i, group in enumerate(self.__hash_to_paths.values()):
@@ -122,10 +121,10 @@ class ImagesDuplicateFinder:
                 if display_images:
                     self.__display_duplicate_group(group, f"Группа {i + 1}.(По хэшам)")
                 print([img[0] for img in group])
-
-        print("Группы по признакам:")
-        for i, group in enumerate(self.__images_grouped_by_features):
-            if len(group) >= min_len_of_duplicates_groups:
-                if display_images:
-                    self.__display_duplicate_group(group, f"Группа {i + 1}.(По признакам)")
-                print([img[0] for img in group])
+        if self.__model is not None:
+            print("Группы по признакам:")
+            for i, group in enumerate(self.__images_grouped_by_features):
+                if len(group) >= min_len_of_duplicates_groups:
+                    if display_images:
+                        self.__display_duplicate_group(group, f"Группа {i + 1}.(По признакам)")
+                    print([img[0] for img in group])
