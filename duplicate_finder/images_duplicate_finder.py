@@ -15,14 +15,14 @@ class ImagesDuplicateFinder:
     def __init__(self, group_by_feature):
         self.__model = None
         if group_by_feature:
-            # Инициализац
+            # Инициализация модели
             loguru.logger.info('Initializing Model...')
             self.__model = keras.applications.VGG16(weights='imagenet', include_top=False,
                                                     pooling='max', input_shape=(224, 224, 3))
             for model_layer in self.__model.layers:
                 model_layer.trainable = False
 
-        self.__images = []
+        self.__images_paths = []
         self.__hash_to_paths = {}
         self.__features_list = []
         self.__images_grouped_by_features = []
@@ -46,7 +46,7 @@ class ImagesDuplicateFinder:
                             continue
 
                         image = Image.open(os.path.join(address, file_name))
-                        self.__images.append((os.path.join(address, file_name), image))
+                        self.__images_paths.append(os.path.join(address, file_name))
 
     @staticmethod
     def __is_file_extension_suitable(file_name):
@@ -73,28 +73,30 @@ class ImagesDuplicateFinder:
     # @time_logger.time_logger
     def group_duplicates(self):
         """Метод для группировки дубликатов"""
-        # группируем по хэшу
-        for path, image in self.__images:
-            hash_str = self.__calculate_hash(image)
+        # Группировка по хэшу
+        for path in self.__images_paths:
+            with Image.open(path) as image:
+                hash_str = self.__calculate_hash(image)
 
             if hash_str in self.__hash_to_paths.keys():
-                self.__hash_to_paths[hash_str].append((path, image))
+                self.__hash_to_paths[hash_str].append(path)
             else:
-                self.__hash_to_paths[hash_str] = [(path, image)]
+                self.__hash_to_paths[hash_str] = [path]
 
         if self.__model is not None:
-            # группируем по признакам
-            for path, image in self.__images:
-                features_vector = self.__calculate_features_vector(image)
-                self.__features_list.append(features_vector)
+            # Группировка по признакам
+            for path in self.__images_paths:
+                with Image.open(path) as image:
+                    features_vector = self.__calculate_features_vector(image)
+                    self.__features_list.append(features_vector)
 
             similarity_matrix = cosine_similarity(self.__features_list)
 
             for i in range(len(similarity_matrix)):
-                duplicates = [self.__images[i]]
+                duplicates = [self.__images_paths[i]]
                 for j in range(i + 1, len(similarity_matrix)):
                     if similarity_matrix[i, j] > 0.9:
-                        duplicates.append(self.__images[j])
+                        duplicates.append(self.__images_paths[j])
 
                 self.__images_grouped_by_features.append(duplicates)
 
@@ -102,12 +104,13 @@ class ImagesDuplicateFinder:
     def __display_duplicate_group(group, message):
         """Метод для вывода на экран группы изображений"""
         plt.clf()
-        for i, image in enumerate(group):
+        for i, path in enumerate(group):
             ax = plt.subplot(1, len(group), i + 1)
             plt.suptitle(message)
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-            plt.imshow(image[1])
+            with Image.open(path) as image:
+                plt.imshow(image)
             plt.grid()
 
         plt.show()
@@ -122,21 +125,23 @@ class ImagesDuplicateFinder:
 
         print("Группы по хэшам:")
         i = 1
+        # Отображаем группы по хэшам
         for group in self.__hash_to_paths.values():
             if len(group) >= min_len_of_duplicates_groups:
                 if display_images:
                     self.__display_duplicate_group(group, f"Группа {i + 1}.(По хэшам)")
-                print([img[0] for img in group])
+                print(group)
                 i += 1
                 plt.pause(1)
 
-        i = 1
+        # Отображаем группы по признакам
         if self.__model is not None:
+            i = 1
             print("Группы по признакам:")
-            for i, group in self.__images_grouped_by_features:
+            for group in self.__images_grouped_by_features:
                 if len(group) >= min_len_of_duplicates_groups:
                     if display_images:
                         self.__display_duplicate_group(group, f"Группа {i + 1}.(По признакам)")
-                    print([img[0] for img in group])
+                    print(group)
                     i += 1
                     plt.pause(1)
