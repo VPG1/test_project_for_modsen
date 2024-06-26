@@ -12,10 +12,14 @@ def parse_arguments():
         description='Finds duplicate images by using and grouping them.',
 
     )
-    parser.add_argument('--group-len', default=3, type=int)
-    parser.add_argument('--group_by_features', action=argparse.BooleanOptionalAction)
-    parser.add_argument('--display-images', action=argparse.BooleanOptionalAction)
-    parser.add_argument('--paths-list', type=list_of_strings)
+    parser.add_argument('--group-len', default=3, type=int,
+                        help='Group len(default: 3)')
+    parser.add_argument('--group_by_features', action=argparse.BooleanOptionalAction,
+                        help='If you want to search for duplicates by features')
+    parser.add_argument('--display-images', action=argparse.BooleanOptionalAction,
+                        help='If you want to display images')
+    parser.add_argument('--paths-list', type=list_of_strings,
+                        help='List of paths to images')
 
     args = parser.parse_args()
 
