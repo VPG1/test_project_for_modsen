@@ -12,4 +12,5 @@
 * several directories
 ![](https://github.com/VPG1/test_project_for_modsen/blob/main/images/several_directories.png)
 * grouping by features
-![](https://github.com/VPG1/test_project_for_modsen/blob/main/images/features.png)
+![](https://github.com/VPG1/test_project_for_modsen/blob/main/images/features1.png)
+![](https://github.com/VPG1/test_project_for_modsen/blob/main/images/features2.png)
