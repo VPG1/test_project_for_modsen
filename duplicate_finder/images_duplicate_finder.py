@@ -101,6 +101,7 @@ class ImagesDuplicateFinder:
     @staticmethod
     def __display_duplicate_group(group, message):
         """Метод для вывода на экран группы изображений"""
+        plt.clf()
         for i, image in enumerate(group):
             ax = plt.subplot(1, len(group), i + 1)
             plt.suptitle(message)
@@ -111,20 +112,31 @@ class ImagesDuplicateFinder:
 
         plt.show()
 
-        time.sleep(1)
+        plt.draw()
+        plt.gcf().canvas.flush_events()
 
     def show_duplicates(self, min_len_of_duplicates_groups, display_images):
         """Метод для вывода всех групп дубликатов"""
+        # Включаем интерактивный режим
+        plt.ion()
+
         print("Группы по хэшам:")
-        for i, group in enumerate(self.__hash_to_paths.values()):
+        i = 1
+        for group in self.__hash_to_paths.values():
             if len(group) >= min_len_of_duplicates_groups:
                 if display_images:
                     self.__display_duplicate_group(group, f"Группа {i + 1}.(По хэшам)")
                 print([img[0] for img in group])
+                i += 1
+                plt.pause(1)
+
+        i = 1
         if self.__model is not None:
             print("Группы по признакам:")
-            for i, group in enumerate(self.__images_grouped_by_features):
+            for i, group in self.__images_grouped_by_features:
                 if len(group) >= min_len_of_duplicates_groups:
                     if display_images:
                         self.__display_duplicate_group(group, f"Группа {i + 1}.(По признакам)")
                     print([img[0] for img in group])
+                    i += 1
+                    plt.pause(1)
