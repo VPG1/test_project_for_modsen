@@ -1,4 +1,7 @@
+import operator
 import os
+from multiprocessing import Pool, cpu_count
+
 import imagehash
 import loguru
 import numpy as np
@@ -9,6 +12,11 @@ import time
 from keras.src.applications.vgg16 import preprocess_input
 from sklearn.metrics.pairwise import cosine_similarity
 from tensorflow import keras
+
+from duplicate_finder import time_logger
+
+
+# нельзя сделать статическим методом, потому что нельзя вызывать статические метод при помощи
 
 
 class ImagesDuplicateFinder:
@@ -58,37 +66,47 @@ class ImagesDuplicateFinder:
 
         return False
 
-    @staticmethod
-    def __calculate_hash(image):
-        """Метод для вычисления хэша изображения"""
-        return str(imagehash.phash(image))
-
-    def __calculate_features_vector(self, image):
+    def __calculate_features_vector(self, path):
         """Метод для вычисления вектора изображения"""
-        resized_image = image.resize((224, 224))
-        img_array = np.expand_dims(np.array(resized_image), axis=0)
-        img_array = preprocess_input(img_array)
-        return self.__model.predict(img_array).flatten()
+        with Image.open(path) as image:
+            resized_image = image.resize((224, 224))
+            img_array = np.expand_dims(np.array(resized_image), axis=0)
+            img_array = preprocess_input(img_array)
+            return self.__model.predict(img_array).flatten()
 
-    # @time_logger.time_logger
-    def group_duplicates(self):
+    @staticmethod
+    def _calculate_hash(path):  # не можем сделать приватным потому-что
+        """Функция для вычисления хэша изображения"""
+        with Image.open(path) as image:
+            return str(imagehash.phash(image))
+
+    @time_logger.time_logger
+    def group_duplicates(self, multiprocessing_on):
         """Метод для группировки дубликатов"""
         # Группировка по хэшу
-        for path in self.__images_paths:
-            with Image.open(path) as image:
-                hash_str = self.__calculate_hash(image)
+        if multiprocessing_on:  # вычисляем хэши во всех потоках
+            with Pool(cpu_count()) as pool:
+                hashes = pool.map(self._calculate_hash, self.__images_paths)
 
-            if hash_str in self.__hash_to_paths.keys():
-                self.__hash_to_paths[hash_str].append(path)
-            else:
-                self.__hash_to_paths[hash_str] = [path]
+            for i, hash_str in enumerate(hashes):
+                if hash_str in self.__hash_to_paths:
+                    self.__hash_to_paths[hash_str].append(self.__images_paths[i])
+                else:
+                    self.__hash_to_paths[hash_str] = [self.__images_paths[i]]
+        else:  # вычисляем хэши в одно потоке
+            for path in self.__images_paths:
+                hash_str = self._calculate_hash(path)
+
+                if hash_str in self.__hash_to_paths.keys():
+                    self.__hash_to_paths[hash_str].append(path)
+                else:
+                    self.__hash_to_paths[hash_str] = [path]
 
         if self.__model is not None:
             # Группировка по признакам
             for path in self.__images_paths:
-                with Image.open(path) as image:
-                    features_vector = self.__calculate_features_vector(image)
-                    self.__features_list.append(features_vector)
+                features_vector = self.__calculate_features_vector(path)
+                self.__features_list.append(features_vector)
 
             similarity_matrix = cosine_similarity(self.__features_list)
 
@@ -123,14 +141,18 @@ class ImagesDuplicateFinder:
         # Включаем интерактивный режим
         plt.ion()
 
-        print("Группы по хэшам:")
         i = 1
-        # Отображаем группы по хэшам
+        print("Группы по хэшам:")
+        # Отображаем группы по хэша
         for group in self.__hash_to_paths.values():
             if len(group) >= min_len_of_duplicates_groups:
                 if display_images:
-                    self.__display_duplicate_group(group, f"Группа {i + 1}.(По хэшам)")
-                print(group)
+                    self.__display_duplicate_group(group, f"Группа {i}.(По хэшам)")
+
+                print(f"Группа {i}:")
+                for path in group:
+                    print(path)
+
                 i += 1
                 plt.pause(1)
 
@@ -141,7 +163,11 @@ class ImagesDuplicateFinder:
             for group in self.__images_grouped_by_features:
                 if len(group) >= min_len_of_duplicates_groups:
                     if display_images:
-                        self.__display_duplicate_group(group, f"Группа {i + 1}.(По признакам)")
-                    print(group)
+                        self.__display_duplicate_group(group, f"Группа {i}.(По признакам)")
+
+                    print(f"Группа {i}:")
+                    for path in group:
+                        print(path)
+
                     i += 1
                     plt.pause(1)
