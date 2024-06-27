@@ -26,12 +26,12 @@ def parse_arguments():
     args = parser.parse_args()
 
     if args.paths_list is None:
-        print("You must provide paths")
+        print("You must provide paths. Please enter some")
         exit()
 
     for path in args.paths_list:
         if not os.path.isdir(path):
-            print("One of the paths is incorrect")
+            print("One of the paths is incorrect. Please double check the paths and try again.")
             exit()
 
     return args
@@ -41,11 +41,8 @@ def main():
     args = parse_arguments()
 
     duplicate_finder = ImagesDuplicateFinder(args.group_by_features)
-
     duplicate_finder.load_images(args.paths_list)
-
     duplicate_finder.group_duplicates(args.multiprocessing)
-
     duplicate_finder.show_duplicates(args.group_len, args.display_images)
 
 

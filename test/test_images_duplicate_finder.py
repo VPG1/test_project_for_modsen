@@ -8,10 +8,10 @@ from PIL import Image
 
 @pytest.fixture(scope='session')
 def setup():
-    # удаляем директорию с тестами
+    # Delete the directory with tests
     shutil.rmtree('tests_im', ignore_errors=True)
 
-    # генерация рандомных изображений
+    # Random image generation
     imarray1 = numpy.random.rand(100, 100, 3) * 255
     im1 = Image.fromarray(imarray1.astype('uint8')).convert('RGBA')
 
@@ -23,19 +23,19 @@ def setup():
 
     os.mkdir('tests_im')
 
-    # инициализация директория для первого теста
+    # Initialization directory for the first test
     os.mkdir('tests_im/test1')
     im1.save('tests_im/test1/result_image1.png')
     im2.save('tests_im/test1/result_image2.png')
     im3.save('tests_im/test1/result_image3.png')
 
-    # инициализация директория для второго теста
+    # Initialization directory for the second test
     os.mkdir('tests_im/test2')
     im1.save('tests_im/test2/result_image1.png')
     im1.save('tests_im/test2/result_image2.png')
     im2.save('tests_im/test2/result_image3.png')
 
-    # инициализация директорий для третьего теста
+    # Initialization directory for the third test
     os.mkdir('tests_im/test3_1')
     im1.save('tests_im/test3_1/result_image1.png')
     im2.save('tests_im/test3_1/result_image2.png')
@@ -46,7 +46,7 @@ def setup():
 
     yield
 
-    # удаляем директорию с данными для тестов
+    # Delete the directory with test data
     shutil.rmtree('tests_im', ignore_errors=True)
 
 
@@ -55,10 +55,10 @@ class TestImagesDuplicateFinder:
     @pytest.mark.parametrize(
         "paths, result",
         [
-            (['tests_im/test1'], 3),  # все изображения разные
-            (['tests_im/test2'], 2),  # два одинаковых изображения
-            (['tests_im/test3_1', 'tests_im/test3_2'], 3),  # два одинаковы изображения в разных папках
-            (['a', 'b', 'c'], 0),  # несуществующие директории
+            (['tests_im/test1'], 3),  # All images are different
+            (['tests_im/test2'], 2),  # Two identical images
+            (['tests_im/test3_1', 'tests_im/test3_2'], 3),  # Two identical images in different folders
+            (['a', 'b', 'c'], 0),  # Non-existent directories
         ]
     )
     def test_group_duplicate(self, paths, result):
