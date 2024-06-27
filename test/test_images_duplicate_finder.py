@@ -56,13 +56,34 @@ class TestImagesDuplicateFinder:
         "paths, result",
         [
             (['tests_im/test1'], 3),  # All images are different
-            (['tests_im/test2'], 2),  # Two identical images
-            (['tests_im/test3_1', 'tests_im/test3_2'], 3),  # Two identical images in different folders
+            (['tests_im/test2'], 3),  # Two identical images
+            (['tests_im/test3_1', 'tests_im/test3_2'], 4),  # Two identical images in different folders
             (['a', 'b', 'c'], 0),  # Non-existent directories
         ]
     )
-    def test_group_duplicate(self, paths, result):
+    def test_load_images(self, paths, result):
         duplicate_finder = ImagesDuplicateFinder(group_by_feature=False)
         duplicate_finder.load_images(paths)
-        duplicate_finder.group_duplicates()
+        assert len(duplicate_finder.images_paths) == result
+
+    @pytest.mark.parametrize(
+        "paths, multiprocessing_on, result",
+        [
+            (['tests_im/test1'], False, 3),  # All images are different
+            (['tests_im/test2'], False, 2),  # Two identical images
+            (['tests_im/test3_1', 'tests_im/test3_2'], False, 3),  # Two identical images in different folders
+            (['a', 'b', 'c'], False, 0),  # Non-existent directories
+            (['tests_im/test1'], True, 3),  # All images are different (multiprocessing_on)
+            (['tests_im/test2'], True, 2),  # Two identical images (multiprocessing_on)
+            (['tests_im/test3_1', 'tests_im/test3_2'], True, 3),  # Two identical images in different folders (multiprocessing_on)
+        ]
+    )
+    def test_group_duplicate(self, paths, multiprocessing_on, result):
+        duplicate_finder = ImagesDuplicateFinder(group_by_feature=False)
+        duplicate_finder.load_images(paths)
+        duplicate_finder.group_duplicates(multiprocessing_on)
+        print(len(duplicate_finder.images_paths))
         assert len(duplicate_finder.hash_to_paths) == result
+
+
+

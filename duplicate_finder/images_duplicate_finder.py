@@ -29,6 +29,11 @@ class ImagesDuplicateFinder:
         self.__images_grouped_by_features = []
 
     @property
+    def images_paths(self):
+        """Getter for list with images paths"""
+        return self.__images_paths
+
+    @property
     def hash_to_paths(self):
         """Getter for a dictionary with duplicates by hashes"""
         return self.__hash_to_paths
