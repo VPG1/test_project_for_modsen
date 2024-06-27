@@ -79,10 +79,10 @@ class ImagesDuplicateFinder:
             return str(imagehash.phash(image))
 
     # @time_logger.time_logger
-    def group_duplicates(self, multiprocessing_on):
+    def group_duplicates(self, use_multiprocessing):
         """Method for grouping duplicates"""
         # Grouping by hash
-        if multiprocessing_on:  # Calculate hashes in all threads
+        if use_multiprocessing:  # Calculate hashes in all threads
             with Pool(cpu_count()) as pool:
                 hashes = pool.map(self._calculate_hash, self.__images_paths)
 
@@ -134,6 +134,8 @@ class ImagesDuplicateFinder:
         plt.draw()
         plt.gcf().canvas.flush_events()
 
+        plt.pause(1)
+
     def show_duplicates(self, min_len_of_duplicates_groups, display_images):
         """Method for outputting all groups of duplicates"""
         # Enable interactive mode
@@ -144,15 +146,14 @@ class ImagesDuplicateFinder:
         # Displaying groups by hash
         for group in self.__hash_to_paths.values():
             if len(group) >= min_len_of_duplicates_groups:
-                if display_images:
-                    self.__display_duplicate_group(group, f"Group {i}.(by hash)")
-
                 print(f"Group {i}:")
                 for path in group:
                     print(path)
 
+                if display_images:
+                    self.__display_duplicate_group(group, f"Group {i}.(by hash)")
+
                 i += 1
-                plt.pause(1)
 
         # Displaying groups by features
         if self.__model is not None:
@@ -168,4 +169,3 @@ class ImagesDuplicateFinder:
                         print(path)
 
                     i += 1
-                    plt.pause(1)

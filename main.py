@@ -19,7 +19,7 @@ def parse_arguments():
     parser.add_argument('--display-images', action=argparse.BooleanOptionalAction,
                         help='If you want to display images')
     parser.add_argument('--multiprocessing', action=argparse.BooleanOptionalAction,
-                        help='If you want to on multiprocessing')
+                        help='If you want to use multiprocessing')
     parser.add_argument('--paths-list', type=list_of_strings,
                         help='List of paths to images')
 
