@@ -30,16 +30,26 @@ class ImagesDuplicateFinder:
 
     @property
     def images_paths(self):
-        """Getter for list with images paths"""
+        """
+        Getter for list with images paths.
+        :return: list with images paths.
+        """
         return self.__images_paths
 
     @property
     def hash_to_paths(self):
-        """Getter for a dictionary with duplicates by hashes"""
+        """
+        Getter for a dictionary with duplicates by hashes
+        :return: dictionary with paths by hashes.
+        """
         return self.__hash_to_paths
 
     def load_images(self, paths):
-        """Method for loading images"""
+        """
+        Method for loading images
+        :param paths: list with images paths.
+        :return: list with images paths.
+        """
         for path in paths:
             for address, dirs, files in os.walk(str(path)):
                 for file_name in files:
@@ -55,7 +65,11 @@ class ImagesDuplicateFinder:
 
     @staticmethod
     def __is_file_extension_suitable(file_name):
-        """Method for checking file extensions"""
+        """
+        Method for checking file extensions
+        :param file_name: file name
+        :return: bool
+        """
         formats = ['jpg', 'jpeg', 'png', 'gif', 'bmp']
         for file_format in formats:
             if file_name.endswith(file_format):
@@ -64,7 +78,11 @@ class ImagesDuplicateFinder:
         return False
 
     def __calculate_features_vector(self, path):
-        """Method for calculating the vector of image features"""
+        """
+        Method for calculating the vector of image features
+        :param path: image path
+        :return: vector of image features
+        """
         with Image.open(path) as image:
             resized_image = image.resize((224, 224))
             img_array = np.expand_dims(np.array(resized_image), axis=0)
@@ -74,13 +92,20 @@ class ImagesDuplicateFinder:
     # Can’t make method private, because we can’t call private methods from other processes
     @staticmethod
     def _calculate_hash(path):
-        """Method to calculate image hash"""
+        """
+        Method to calculate image hash
+        :param path: image path
+        :return: hash
+        """
         with Image.open(path) as image:
             return str(imagehash.phash(image))
 
     # @time_logger.time_logger
     def group_duplicates(self, use_multiprocessing):
-        """Method for grouping duplicates"""
+        """
+        Method for grouping duplicates
+        :param use_multiprocessing: True to use multiprocessing
+        """
         # Grouping by hash
         if use_multiprocessing:  # Calculate hashes in all threads
             with Pool(cpu_count()) as pool:
@@ -118,7 +143,11 @@ class ImagesDuplicateFinder:
 
     @staticmethod
     def __display_duplicate_group(group, message):
-        """Method for displaying a group of images"""
+        """
+        Method for displaying a group of images
+        :param group: list with images paths.
+        :param message: message to be displayed.
+        """
         plt.clf()
         for i, path in enumerate(group):
             ax = plt.subplot(1, len(group), i + 1)
@@ -137,7 +166,11 @@ class ImagesDuplicateFinder:
         plt.pause(1)
 
     def show_duplicates(self, min_len_of_duplicates_groups, display_images):
-        """Method for outputting all groups of duplicates"""
+        """
+        Method for outputting all groups of duplicates
+        :param min_len_of_duplicates_groups: minimum length of groups
+        :param display_images: True to display images.
+        """
         # Enable interactive mode
         plt.ion()
 
